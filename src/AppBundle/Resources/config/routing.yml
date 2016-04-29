@@ -1,0 +1,11 @@
+api_sight:
+    resource: AppBundle\Controller\SightController
+    type: rest
+
+api_sight_tour:
+    resource: AppBundle\Controller\SightTourController
+    type: rest
+
+api_sight_ticket:
+    resource: AppBundle\Controller\SightTicketController
+    type: rest

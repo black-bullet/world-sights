@@ -1,0 +1,5 @@
+services:
+    app.slug:
+        class: AppBundle\Service\SlugService
+        arguments:
+            - '@slugify'
