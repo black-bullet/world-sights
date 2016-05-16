@@ -16,6 +16,7 @@ use JMS\Serializer\Annotation as JMS;
  *
  * @ORM\Table(name="sight_tours")
  * @ORM\Entity(repositoryClass="AppBundle\Repository\SightTourRepository")
+ * @UniqueEntity("slug")
  *
  * @JMS\ExclusionPolicy("all")
  *
@@ -145,7 +146,7 @@ class SightTour
     private $slug;
 
     /**
-     * @var boolean $enabled Enabled
+     * @var bool $enabled Enabled
      *
      * @ORM\Column(type="boolean")
      *
@@ -350,7 +351,7 @@ class SightTour
     /**
      * Is enabled?
      *
-     * @return boolean Is enabled?
+     * @return bool Is enabled?
      */
     public function isEnabled()
     {
@@ -360,7 +361,7 @@ class SightTour
     /**
      * Set enabled
      *
-     * @param boolean $enabled Enabled
+     * @param bool $enabled Enabled
      *
      * @return $this
      */

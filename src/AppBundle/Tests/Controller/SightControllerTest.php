@@ -20,12 +20,14 @@ class SightControllerTest extends WebTestCase
 
     public function setUp()
     {
+        $this->getFixtures();
+
         parent::setUp();
 
-        $this->client  = static::makeClient();
-        $this->manager = $this->client->getContainer()->get('doctrine')->getManager();
+        $this->client = static::makeClient();
+        $this->client->setServerParameter('HTTP_X_AUTH_TOKEN', '1e5008f3677f7ba2a8bd8e47b8c0c6');
 
-        $this->getFixtures();
+        $this->manager = $this->client->getContainer()->get('doctrine')->getManager();
     }
 
     public function testGetAllAction()
@@ -39,11 +41,14 @@ class SightControllerTest extends WebTestCase
         $this->assertEquals(200, $data['code']);
         $this->assertCount(6, $data['sights']);
         $this->comparisonSight($data['sights'][0]);
+        $this->assertEquals(6, $data['_metadata']['total']);
+        $this->assertEquals(10, $data['_metadata']['limit']);
+        $this->assertEquals(0, $data['_metadata']['offset']);
     }
 
     public function testGetAction()
     {
-        $this->client->request('GET', '/api/v1/sights/kamianets-podіlska-fortess');
+        $this->client->request('GET', '/api/v1/sights/kam-yanec-podilska-fortecya');
 
         $response = $this->client->getResponse();
         $data     = json_decode($response->getContent(), true);
@@ -55,7 +60,7 @@ class SightControllerTest extends WebTestCase
 
     public function testGetTicketAction()
     {
-        $this->client->request('GET', '/api/v1/sights/kamianets-podіlska-fortess/tickets');
+        $this->client->request('GET', '/api/v1/sights/kam-yanec-podilska-fortecya/tickets');
 
         $response = $this->client->getResponse();
         $data     = json_decode($response->getContent(), true);
@@ -67,7 +72,7 @@ class SightControllerTest extends WebTestCase
 
     public function testGetTourAction()
     {
-        $this->client->request('GET', '/api/v1/sights/kamianets-podіlska-fortess/tours');
+        $this->client->request('GET', '/api/v1/sights/kam-yanec-podilska-fortecya/tours');
 
         $response = $this->client->getResponse();
         $data     = json_decode($response->getContent(), true);
@@ -84,7 +89,7 @@ class SightControllerTest extends WebTestCase
         $sightType = $this->manager->getRepository('AppBundle:SightType')->findSightTypeFirstResult();
         $locality  = $this->manager->getRepository('AppBundle:Locality')->findLocalityFirstResult();
 
-        $data = [
+        $dataRequest = [
             'name'       => 'Кам\'яна фортеця',
             'phone'      => '(03849)2-55-33',
             'website'    => 'http://muzeum.in.ua/',
@@ -97,7 +102,7 @@ class SightControllerTest extends WebTestCase
         $this->client->request(
             'POST',
             '/api/v1/sights',
-            $data,
+            $dataRequest,
             [],
             ['Content-Type' => 'application/json'],
             []
@@ -108,10 +113,10 @@ class SightControllerTest extends WebTestCase
 
         $this->assertStatusCode(Response::HTTP_CREATED, $this->client);
         $this->assertEquals(201, $data['code']);
-
-        foreach ($data as $key => $element) {
-            $this->assertEquals($element, $data[$key]);
-        }
+        $this->assertEquals($dataRequest['name'], $data['sight']['name']);
+        $this->assertEquals($dataRequest['phone'], $data['sight']['phone']);
+        $this->assertEquals($dataRequest['sight_type'], $data['sight']['sight_type']['id']);
+        $this->assertEquals($dataRequest['locality'], $data['sight']['locality']['id']);
     }
 
     public function testUpdateAction()
@@ -121,7 +126,7 @@ class SightControllerTest extends WebTestCase
         $sightType = $this->manager->getRepository('AppBundle:SightType')->findSightTypeFirstResult();
         $locality  = $this->manager->getRepository('AppBundle:Locality')->findLocalityFirstResult();
 
-        $data = [
+        $dataRequest = [
             'name'       => 'Кам\'яна фоssdfртеця',
             'phone'      => '(03849)2-55-4433',
             'website'    => 'http://muzeumvv.in.ua/',
@@ -133,8 +138,8 @@ class SightControllerTest extends WebTestCase
 
         $this->client->request(
             'PUT',
-            '/api/v1/sights/hotinska-fortress',
-            $data,
+            '/api/v1/sights/hotinska-fortecya',
+            $dataRequest,
             [],
             ['Content-Type' => 'application/json'],
             []
@@ -145,15 +150,15 @@ class SightControllerTest extends WebTestCase
 
         $this->assertStatusCode(Response::HTTP_OK, $this->client);
         $this->assertEquals(200, $data['code']);
-
-        foreach ($data as $key => $element) {
-            $this->assertEquals($element, $data[$key]);
-        }
+        $this->assertEquals($dataRequest['name'], $data['sight']['name']);
+        $this->assertEquals($dataRequest['phone'], $data['sight']['phone']);
+        $this->assertEquals($dataRequest['sight_type'], $data['sight']['sight_type']['id']);
+        $this->assertEquals($dataRequest['locality'], $data['sight']['locality']['id']);
     }
 
     public function testDeleteAction()
     {
-        $this->client->request('DELETE', '/api/v1/sights/hortitsa');
+        $this->client->request('DELETE', '/api/v1/sights/hotinska-fortecya');
 
         $this->assertStatusCode(Response::HTTP_NO_CONTENT, $this->client);
     }
@@ -170,6 +175,7 @@ class SightControllerTest extends WebTestCase
             'AppBundle\DataFixtures\ORM\LoadSightData',
             'AppBundle\DataFixtures\ORM\LoadSightTourData',
             'AppBundle\DataFixtures\ORM\LoadSightTicketData',
+            'AppBundle\DataFixtures\ORM\LoadUserData',
         ];
 
         $this->loadFixtures($fixtures);
@@ -178,20 +184,30 @@ class SightControllerTest extends WebTestCase
     private function comparisonSight(array $data)
     {
         $sight = [
-            'name'      => 'Кам\'янець-подільська фортеця',
-            'phone'     => '(03849)2-55-33',
-            'website'   => 'http://muzeum.in.ua/',
-            'longitude' => 26.563411,
-            'latitude'  => 48.67351,
-            'slug'      => 'kamianets-podіlska-fortess',
+            'name'       => 'Кам\'янець-подільська фортеця',
+            'phone'      => '(03849)2-55-33',
+            'website'    => 'http://muzeum.in.ua/',
+            'slug'       => 'kam-yanec-podilska-fortecya',
+            'sight_type' => [
+                'name' => 'Замок',
+            ],
+            'locality'   => [
+                'name'    => 'Кам\'янець-Подільський',
+                'country' => [
+                    'name' => 'Україна',
+                ],
+            ],
         ];
 
         foreach ($sight as $key => $el) {
-            $this->assertEquals($el, $data[$key]);
+            if (is_array($data[$key])) {
+                foreach ($data[$key] as $key1 => $el1) {
+                    $this->assertEquals($el1, $data[$key][$key1]);
+                }
+            } else {
+                $this->assertEquals($el, $data[$key]);
+            }
         }
-
-        $this->assertEquals('Замок', $data['sight_type']['name']);
-        $this->assertEquals('Кам\'янець-Подільський', $data['locality']['name']);
     }
 
     private function comparisonSightTour(array $data)
@@ -200,7 +216,7 @@ class SightControllerTest extends WebTestCase
             'name'         => 'Екскурсійна програма по місту Кам’янець-Подільському',
             'company_name' => '7 днів',
             'tour_link'    => 'http://www.7dniv.ua/ua/tourism-directions',
-            'slug'         => 'sightseeing-in-the-city-kamenetz-podolsk',
+            'slug'         => 'ekskursiyna-programa-po-mistu-kam-yanec-podilskomu',
         ];
 
         foreach ($sightTour as $key => $el) {
@@ -213,7 +229,7 @@ class SightControllerTest extends WebTestCase
         $sightTour = [
             'type'     => SightTicketType::TRAIN_TICKET,
             'link_buy' => 'https://gd.tickets.ua/uk/railwaytracker/table/Kamenetz-Podolsk~2200260',
-            'slug'     => 'kiev-kamyanets-train-ticket',
+            'slug'     => 'kijiv-kam-yanec-podilskiy-tt',
         ];
 
         foreach ($sightTour as $key => $el) {

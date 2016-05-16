@@ -4,6 +4,7 @@ namespace AppBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
@@ -16,6 +17,7 @@ use JMS\Serializer\Annotation as JMS;
  *
  * @ORM\Table(name="localities")
  * @ORM\Entity(repositoryClass="AppBundle\Repository\LocalityRepository")
+ * @UniqueEntity("slug")
  *
  * @JMS\ExclusionPolicy("all")
  *
@@ -33,7 +35,7 @@ class Locality
      * @ORM\GeneratedValue(strategy="AUTO")
      *
      * @JMS\Expose
-     * @JMS\Groups({"sight", "sight_ticket", "sight_tour", "sight_ticket_for_sight"})
+     * @JMS\Groups({"sight", "sight_ticket", "sight_tour", "sight_ticket_for_sight", "sight_visits", "sight_photo", "sight_review", "sight_recommend"})
      * @JMS\Since("1.0")
      */
     private $id;
@@ -47,7 +49,7 @@ class Locality
      * @Assert\NotBlank()
      *
      * @JMS\Expose
-     * @JMS\Groups({"sight", "sight_ticket", "sight_tour", "sight_ticket_for_sight"})
+     * @JMS\Groups({"sight", "sight_ticket", "sight_tour", "sight_ticket_for_sight", "sight_visits", "sight_visits_friends", "sight_photo", "sight_review", "sight_recommend"})
      * @JMS\Since("1.0")
      *
      * @Gedmo\Versioned
@@ -85,7 +87,7 @@ class Locality
      * @Assert\Type(type="string")
      *
      * @JMS\Expose
-     * @JMS\Groups({"sight", "sight_ticket", "sight_tour", "sight_ticket_for_sight"})
+     * @JMS\Groups({"sight", "sight_ticket", "sight_tour", "sight_ticket_for_sight", "sight_visits", "sight_visits_friends", "sight_photo", "sight_review", "sight_recommend"})
      * @JMS\Since("1.0")
      *
      * @Gedmo\Versioned
@@ -93,7 +95,18 @@ class Locality
     private $name;
 
     /**
-     * @var boolean $enabled Enabled
+     * @var string $slug Slug
+     *
+     * @ORM\Column(type="string", unique=true)
+     *
+     * @JMS\Expose
+     * @JMS\Groups({"sight", "sight_ticket", "sight_tour", "sight_ticket_for_sight", "sight_visits", "sight_visits_friends", "sight_photo", "sight_review", "sight_recommend"})
+     * @JMS\Since("1.0")
+     */
+    private $slug;
+
+    /**
+     * @var bool $enabled Enabled
      *
      * @ORM\Column(type="boolean")
      *
@@ -186,9 +199,33 @@ class Locality
     }
 
     /**
+     * Set slug
+     *
+     * @param string $slug Slug
+     *
+     * @return $this
+     */
+    public function setSlug($slug)
+    {
+        $this->slug = $slug;
+
+        return $this;
+    }
+
+    /**
+     * Get slug
+     *
+     * @return string Slug
+     */
+    public function getSlug()
+    {
+        return $this->slug;
+    }
+
+    /**
      * Is enabled?
      *
-     * @return boolean Is enabled?
+     * @return bool Is enabled?
      */
     public function isEnabled()
     {
@@ -198,7 +235,7 @@ class Locality
     /**
      * Set enabled
      *
-     * @param boolean $enabled Enabled
+     * @param bool $enabled Enabled
      *
      * @return $this
      */

@@ -12,6 +12,7 @@ use JMS\Serializer\SerializationContext;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Nelmio\ApiDocBundle\Annotation\ApiDoc;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Sight Tour Controller
@@ -26,16 +27,14 @@ class SightTourController extends FOSRestController
     use ControllerHelperTrait, RollbarHelperTrait;
 
     /**
-     * Return all sight tours
+     * Get all sight tours
      *
      * @param Request $request Request
      *
-     * @return SightTour[]
-     *
-     * @throws ServerInternalErrorException
+     * @return Response
      *
      * @ApiDoc(
-     *     description="Return all sight tours",
+     *     description="Get all sight tours",
      *     section="Sight Tour",
      *     statusCodes={
      *          200="Returned when successful",
@@ -58,12 +57,65 @@ class SightTourController extends FOSRestController
                 $paginator = $form->getData();
 
                 $sightTours = $sightTourRepository->findSightToursWithPagination($paginator);
+                $total      = $sightTourRepository->getTotalNumberOfEnabledSightTours();
+
+                $view = $this->createViewForHttpOkResponse([
+                    'sight_tours' => $sightTours,
+                    '_metadata'   => [
+                        'total'  => $total,
+                        'limit'  => $paginator->getLimit(),
+                        'offset' => $paginator->getOffset(),
+                    ],
+                ]);
+                $view->setSerializationContext(SerializationContext::create()->setGroups(['sight_tour']));
             } else {
-                $sightTours = $sightTourRepository->findAllSightTours();
+                $view = $this->createViewForValidationErrorResponse($form);
+            }
+        } catch (\Exception $e) {
+            $this->sendExceptionToRollbar($e);
+            throw $this->createInternalServerErrorException();
+        }
+
+        return $this->handleView($view);
+    }
+
+    /**
+     * Get sight tour by slug
+     *
+     * @param SightTour $sightTour Sight tour
+     *
+     * @return Response
+     *
+     * @ApiDoc(
+     *     description="Get sight tour by slug",
+     *     requirements={
+     *          {"name"="slug", "dataType"="string", "requirement"="\w+", "description"="Slug of sight tour"}
+     *      },
+     *     section="Sight Tour",
+     *     statusCodes={
+     *          200="Returned when successful",
+     *          404="Returned when sight tour not found",
+     *          500="Returned when internal error on the server occurred"
+     *      }
+     * )
+     *
+     * @Rest\Get("/{slug}")
+     *
+     * @ParamConverter("sightTour", class="AppBundle:SightTour")
+     */
+    public function getAction(SightTour $sightTour)
+    {
+        try {
+            if (!$sightTour->isEnabled()) {
+                $view = $this->createViewForHttpNotFoundResponse([
+                    'message' => 'Sight tour not Found',
+                ]);
+
+                return $this->handleView($view);
             }
 
             $view = $this->createViewForHttpOkResponse([
-                'sight_tours' => $sightTours,
+                'sight_tour' => $sightTour,
             ]);
             $view->setSerializationContext(SerializationContext::create()->setGroups(['sight_tour']));
         } catch (\Exception $e) {
@@ -75,57 +127,11 @@ class SightTourController extends FOSRestController
     }
 
     /**
-     * Return sight tour by slug
-     *
-     * @param SightTour $sightTour Sight tour
-     *
-     * @return SightTour
-     *
-     * @throws ServerInternalErrorException
-     *
-     * @ApiDoc(
-     *     description="Return sight tour by slug",
-     *     requirements={
-     *          {"name"="slug", "dataType"="string", "requirement"="\w+", "description"="Slug of sight tour"}
-     *      },
-     *     section="Sight Tour",
-     *     statusCodes={
-     *          200="Returned when successful",
-     *          404="Returned when sight not found",
-     *          500="Returned when internal error on the server occurred"
-     *      }
-     * )
-     *
-     * @Rest\Get("/{slug}")
-     *
-     * @ParamConverter("sightTour", class="AppBundle:SightTour")
-     */
-    public function getAction(SightTour $sightTour)
-    {
-        if (!$sightTour->isEnabled()) {
-            $view = $this->createViewForHttpNotFoundResponse([
-                'message' => 'Not Found',
-            ]);
-
-            return $this->handleView($view);
-        }
-
-        $view = $this->createViewForHttpOkResponse([
-            'sight_tour' => $sightTour,
-        ]);
-        $view->setSerializationContext(SerializationContext::create()->setGroups(['sight_tour']));
-
-        return $this->handleView($view);
-    }
-
-    /**
      * Create sight tour
      *
      * @param Request $request Request
      *
-     * @return SightTour
-     *
-     * @throws ServerInternalErrorException
+     * @return Response
      *
      * @ApiDoc(
      *      section="Sight Tour",
@@ -154,10 +160,6 @@ class SightTourController extends FOSRestController
                 /** @var SightTour $sightTour */
                 $sightTour = $form->getData();
 
-                $slug = $this->get('app.slug')->createSlug($sightTour->getName());
-
-                $sightTour->setSlug($slug);
-
                 $em = $this->getDoctrine()->getManager();
                 $em->persist($sightTour);
                 $em->flush();
@@ -181,7 +183,7 @@ class SightTourController extends FOSRestController
      * @param Request   $request   Request
      * @param SightTour $sightTour Sight Tour
      *
-     * @return SightTour
+     * @return Response
      *
      * @ApiDoc(
      *      section="Sight Tour",
@@ -195,7 +197,7 @@ class SightTourController extends FOSRestController
      *          {"name"="slug", "dataType"="string", "requirement"="\w+", "description"="Slug of sight tour"}
      *      },
      *      statusCodes={
-     *          201="Returned when successful",
+     *          200="Returned when successful",
      *          400="Returned when the form has errors or invalid data",
      *          500="Returned when internal error on the server occurred"
      *      }
@@ -207,17 +209,13 @@ class SightTourController extends FOSRestController
      */
     public function updateAction(Request $request, SightTour $sightTour)
     {
-        $form = $this->createForm(SightTourType::class, $sightTour);
+        try {
+            $form = $this->createForm(SightTourType::class, $sightTour);
 
-        $form->submit($request->request->all());
-        if ($form->isValid()) {
-            try {
+            $form->submit($request->request->all());
+            if ($form->isValid()) {
                 /** @var SightTour $sightTour */
                 $sightTour = $form->getData();
-
-                $slug = $this->get('app.slug')->createSlug($sightTour->getName());
-
-                $sightTour->setSlug($slug);
 
                 $em = $this->getDoctrine()->getManager();
                 $em->persist($sightTour);
@@ -225,12 +223,12 @@ class SightTourController extends FOSRestController
 
                 $view = $this->createViewForHttpOkResponse(['sight_tour' => $sightTour]);
                 $view->setSerializationContext(SerializationContext::create()->setGroups(['sight_tour']));
-            } catch (\Exception $e) {
-                $this->sendExceptionToRollbar($e);
-                throw $this->createInternalServerErrorException();
+            } else {
+                $view = $this->createViewForValidationErrorResponse($form);
             }
-        } else {
-            $view = $this->createViewForValidationErrorResponse($form);
+        } catch (\Exception $e) {
+            $this->sendExceptionToRollbar($e);
+            throw $this->createInternalServerErrorException();
         }
 
         return $this->handleView($view);
@@ -242,8 +240,6 @@ class SightTourController extends FOSRestController
      * @param SightTour $sightTour Sight tour
      *
      * @return Response
-     *
-     * @throws ServerInternalErrorException
      *
      * @ApiDoc(
      *       requirements={
@@ -272,8 +268,6 @@ class SightTourController extends FOSRestController
             throw $this->createInternalServerErrorException();
         }
 
-        $view = $this->createViewForHttpNoContentResponse();
-
-        return $view;
+        return $this->createViewForHttpNoContentResponse();
     }
 }

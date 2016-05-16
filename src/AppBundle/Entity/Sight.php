@@ -35,7 +35,7 @@ class Sight
      * @ORM\GeneratedValue(strategy="AUTO")
      *
      * @JMS\Expose
-     * @JMS\Groups({"sight", "sight_tour", "sight_ticket"})
+     * @JMS\Groups({"sight", "sight_tour", "sight_ticket", "sight_visits", "sight_visits_friends", "sight_photo", "sight_review", "sight_recommend"})
      * @JMS\Since("1.0")
      */
     private $id;
@@ -49,7 +49,7 @@ class Sight
      * @Assert\NotBlank()
      *
      * @JMS\Expose
-     * @JMS\Groups({"sight", "sight_tour", "sight_ticket"})
+     * @JMS\Groups({"sight", "sight_tour", "sight_ticket", "sight_visits", "sight_visits_friends", "sight_photo", "sight_review", "sight_recommend"})
      * @JMS\Since("1.0")
      *
      * @Gedmo\Versioned
@@ -65,7 +65,7 @@ class Sight
      * @Assert\NotBlank()
      *
      * @JMS\Expose
-     * @JMS\Groups({"sight", "sight_tour", "sight_ticket"})
+     * @JMS\Groups({"sight", "sight_tour", "sight_ticket", "sight_visits", "sight_visits_friends", "sight_photo", "sight_review", "sight_recommend"})
      * @JMS\Since("1.0")
      *
      * @Gedmo\Versioned
@@ -95,6 +95,46 @@ class Sight
     private $sightTickets;
 
     /**
+     * @var ArrayCollection|SightVisit[] $sightVisits Sight visits
+     *
+     * @ORM\OneToMany(targetEntity="AppBundle\Entity\SightVisit", mappedBy="sight")
+     *
+     * @JMS\Expose
+     * @JMS\Since("1.0")
+     */
+    private $sightVisits;
+
+    /**
+     * @var ArrayCollection|SightPhoto[] $sightPhotos Sight photos
+     *
+     * @ORM\OneToMany(targetEntity="AppBundle\Entity\SightPhoto", mappedBy="sight")
+     *
+     * @JMS\Expose
+     * @JMS\Since("1.0")
+     */
+    private $sightPhotos;
+
+    /**
+     * @var ArrayCollection|SightReview[] $sightReviews Sight reviews
+     *
+     * @ORM\OneToMany(targetEntity="AppBundle\Entity\SightReview", mappedBy="sight")
+     *
+     * @JMS\Expose
+     * @JMS\Since("1.0")
+     */
+    private $sightReviews;
+
+    /**
+     * @var ArrayCollection|SightRecommend[] $sightRecommends Sight recommends
+     *
+     * @ORM\OneToMany(targetEntity="AppBundle\Entity\SightRecommend", mappedBy="sight")
+     *
+     * @JMS\Expose
+     * @JMS\Since("1.0")
+     */
+    private $sightRecommends;
+
+    /**
      * @var string $name Name
      *
      * @ORM\Column(type="string", length=255, nullable=false)
@@ -104,7 +144,7 @@ class Sight
      * @Assert\Type(type="string")
      *
      * @JMS\Expose
-     * @JMS\Groups({"sight", "sight_tour", "sight_ticket"})
+     * @JMS\Groups({"sight", "sight_tour", "sight_ticket", "sight_visits", "sight_visits_friends", "sight_photo", "sight_review", "sight_recommend"})
      * @JMS\Since("1.0")
      *
      * @Gedmo\Versioned
@@ -117,7 +157,7 @@ class Sight
      * @ORM\Column(type="text", nullable=true)
      *
      * @JMS\Expose
-     * @JMS\Groups({"sight", "sight_tour", "sight_ticket"})
+     * @JMS\Groups({"sight", "sight_tour", "sight_ticket", "sight_visits", "sight_visits_friends", "sight_photo", "sight_review", "sight_recommend"})
      * @JMS\Since("1.0")
      *
      * @Gedmo\Versioned
@@ -130,7 +170,7 @@ class Sight
      * @ORM\Column(type="string", length=255, nullable=true)
      *
      * @JMS\Expose
-     * @JMS\Groups({"sight", "sight_tour", "sight_ticket"})
+     * @JMS\Groups({"sight", "sight_tour", "sight_ticket", "sight_visits", "sight_visits_friends", "sight_photo", "sight_review", "sight_recommend"})
      * @JMS\Since("1.0")
      *
      * @Gedmo\Versioned
@@ -143,7 +183,7 @@ class Sight
      * @ORM\Column(type="string", length=50, nullable=true)
      *
      * @JMS\Expose
-     * @JMS\Groups({"sight", "sight_tour", "sight_ticket"})
+     * @JMS\Groups({"sight", "sight_tour", "sight_ticket", "sight_visits", "sight_visits_friends", "sight_photo", "sight_review", "sight_recommend"})
      * @JMS\Since("1.0")
      *
      * @Gedmo\Versioned
@@ -156,7 +196,7 @@ class Sight
      * @ORM\Column(type="string", length=255, nullable=true)
      *
      * @JMS\Expose
-     * @JMS\Groups({"sight", "sight_tour", "sight_ticket"})
+     * @JMS\Groups({"sight", "sight_tour", "sight_ticket", "sight_visits", "sight_visits_friends", "sight_photo", "sight_review", "sight_recommend"})
      * @JMS\Since("1.0")
      *
      * @Gedmo\Versioned
@@ -169,7 +209,7 @@ class Sight
      * @ORM\Column(type="text", nullable=true)
      *
      * @JMS\Expose
-     * @JMS\Groups({"sight", "sight_tour", "sight_ticket"})
+     * @JMS\Groups({"sight", "sight_tour", "sight_ticket", "sight_visits", "sight_visits_friends", "sight_photo", "sight_review", "sight_recommend"})
      * @JMS\Since("1.0")
      *
      * @Gedmo\Versioned
@@ -182,7 +222,7 @@ class Sight
      * @ORM\Column(type="float", nullable=true)
      *
      * @JMS\Expose
-     * @JMS\Groups({"sight", "sight_tour", "sight_ticket"})
+     * @JMS\Groups({"sight", "sight_tour", "sight_ticket", "sight_visits", "sight_visits_friends", "sight_photo", "sight_review", "sight_recommend"})
      * @JMS\Since("1.0")
      *
      * @Gedmo\Versioned
@@ -195,7 +235,7 @@ class Sight
      * @ORM\Column(type="float", nullable=true)
      *
      * @JMS\Expose
-     * @JMS\Groups({"sight", "sight_tour", "sight_ticket"})
+     * @JMS\Groups({"sight", "sight_tour", "sight_ticket", "sight_visits", "sight_visits_friends", "sight_photo", "sight_review", "sight_recommend"})
      * @JMS\Since("1.0")
      *
      * @Gedmo\Versioned
@@ -208,13 +248,13 @@ class Sight
      * @ORM\Column(type="string", unique=true)
      *
      * @JMS\Expose
-     * @JMS\Groups({"sight", "sight_tour", "sight_ticket"})
+     * @JMS\Groups({"sight", "sight_tour", "sight_ticket", "sight_visits", "sight_visits_friends", "sight_photo", "sight_review", "sight_recommend"})
      * @JMS\Since("1.0")
      */
     private $slug;
 
     /**
-     * @var boolean $enabled Enabled
+     * @var bool $enabled Enabled
      *
      * @ORM\Column(type="boolean")
      *
@@ -223,12 +263,24 @@ class Sight
     private $enabled = true;
 
     /**
+     * @var int $user ID of User
+     *
+     * @JMS\Expose
+     * @JMS\Groups({"sight_visits_friends"})
+     * @JMS\Since("1.0")
+     */
+    private $user;
+
+    /**
      * Constructor
      */
     public function __construct()
     {
         $this->sightTours   = new ArrayCollection();
         $this->sightTickets = new ArrayCollection();
+        $this->sightVisits  = new ArrayCollection();
+        $this->sightPhotos  = new ArrayCollection();
+        $this->sightReviews = new ArrayCollection();
     }
 
     /**
@@ -524,7 +576,7 @@ class Sight
     /**
      * Is enabled?
      *
-     * @return boolean Is enabled?
+     * @return bool Is enabled?
      */
     public function isEnabled()
     {
@@ -534,13 +586,37 @@ class Sight
     /**
      * Set enabled
      *
-     * @param boolean $enabled Enabled
+     * @param bool $enabled Enabled
      *
      * @return $this
      */
     public function setEnabled($enabled)
     {
         $this->enabled = $enabled;
+
+        return $this;
+    }
+
+    /**
+     * Get user
+     *
+     * @return User User
+     */
+    public function getUser()
+    {
+        return $this->user;
+    }
+
+    /**
+     * Set user
+     *
+     * @param User $user User
+     *
+     * @return $this
+     */
+    public function setUser($user)
+    {
+        $this->user = $user;
 
         return $this;
     }
@@ -645,5 +721,209 @@ class Sight
     public function getSightTickets()
     {
         return $this->sightTours;
+    }
+
+    /**
+     * Add sight visit
+     *
+     * @param SightVisit $sightVisit Sight visit
+     *
+     * @return $this
+     */
+    public function addSightVisit(SightVisit $sightVisit)
+    {
+        $this->sightVisits[] = $sightVisit;
+
+        return $this;
+    }
+
+    /**
+     * Remove sight visit
+     *
+     * @param SightVisit $sightVisit Sight visit
+     */
+    public function removeSightVisit(SightVisit $sightVisit)
+    {
+        $this->sightVisits->removeElement($sightVisit);
+    }
+
+    /**
+     * Get sight visits
+     *
+     * @return ArrayCollection|SightVisit[] Sight visits
+     */
+    public function getSightVisits()
+    {
+        return $this->sightVisits;
+    }
+
+    /**
+     * Set sight visits
+     *
+     * @param ArrayCollection|SightVisit[] $sightVisits Sight visits
+     *
+     * @return $this
+     */
+    public function setSightVisits(ArrayCollection $sightVisits)
+    {
+        foreach ($sightVisits as $sightVisit) {
+            $sightVisit->setSight($this);
+        }
+        $this->sightVisits = $sightVisits;
+
+        return $this;
+    }
+
+    /**
+     * Add sight photo
+     *
+     * @param SightPhoto $sightPhoto Sight photo
+     *
+     * @return $this
+     */
+    public function addSightPhoto(SightPhoto $sightPhoto)
+    {
+        $this->sightPhotos[] = $sightPhoto;
+
+        return $this;
+    }
+
+    /**
+     * Remove sight photo
+     *
+     * @param SightPhoto $sightPhoto Sight photo
+     */
+    public function removeSightPhoto(SightPhoto $sightPhoto)
+    {
+        $this->sightPhotos->removeElement($sightPhoto);
+    }
+
+    /**
+     * Get sight photos
+     *
+     * @return ArrayCollection|SightPhoto[] Sight photos
+     */
+    public function getSightPhotos()
+    {
+        return $this->sightPhotos;
+    }
+
+    /**
+     * Set sight photos
+     *
+     * @param ArrayCollection|SightPhoto[] $sightPhotos Sight photos
+     *
+     * @return $this
+     */
+    public function setSightPhotos(ArrayCollection $sightPhotos)
+    {
+        foreach ($sightPhotos as $sightPhoto) {
+            $sightPhoto->setSight($this);
+        }
+        $this->sightPhotos = $sightPhotos;
+
+        return $this;
+    }
+
+    /**
+     * Add sight review
+     *
+     * @param SightReview $sightReview Sight review
+     *
+     * @return $this
+     */
+    public function addSightReview(SightReview $sightReview)
+    {
+        $this->sightReviews[] = $sightReview;
+
+        return $this;
+    }
+
+    /**
+     * Remove sight review
+     *
+     * @param SightReview $sightReview Sight review
+     */
+    public function removeSightReview(SightReview $sightReview)
+    {
+        $this->sightReviews->removeElement($sightReview);
+    }
+
+    /**
+     * Get sight reviews
+     *
+     * @return ArrayCollection|SightReview[] Sight reviews
+     */
+    public function getSightReviews()
+    {
+        return $this->sightReviews;
+    }
+
+    /**
+     * Set sight reviews
+     *
+     * @param ArrayCollection|SightReview[] $sightReviews Sight reviews
+     *
+     * @return $this
+     */
+    public function setSightReviews(ArrayCollection $sightReviews)
+    {
+        foreach ($sightReviews as $sightReview) {
+            $sightReview->setSight($this);
+        }
+        $this->sightReviews = $sightReviews;
+
+        return $this;
+    }
+
+    /**
+     * Add sight recommend
+     *
+     * @param SightRecommend $sightRecommend Sight recommend
+     *
+     * @return $this
+     */
+    public function addSightRecommend(SightRecommend $sightRecommend)
+    {
+        $this->sightRecommends[] = $sightRecommend;
+
+        return $this;
+    }
+
+    /**
+     * Remove sight recommend
+     *
+     * @param SightRecommend $sightRecommend Sight recommend
+     */
+    public function removeSightRecommend(SightRecommend $sightRecommend)
+    {
+        $this->sightRecommends->removeElement($sightRecommend);
+    }
+
+    /**
+     * Get sight recommends
+     *
+     * @return ArrayCollection|SightRecommend[] Sight recommends
+     */
+    public function getSightRecommends()
+    {
+        return $this->sightRecommends;
+    }
+
+    /**
+     * Set sight recommends
+     *
+     * @param ArrayCollection|SightRecommend[] $sightRecommends Sight recommends
+     *
+     * @return $this
+     */
+    public function setSightRecommends(ArrayCollection $sightRecommends)
+    {
+        foreach ($sightRecommends as $sightRecommend) {
+            $sightRecommend->setSight($this);
+        }
+        $this->sightRecommends = $sightRecommends;
+
+        return $this;
     }
 }

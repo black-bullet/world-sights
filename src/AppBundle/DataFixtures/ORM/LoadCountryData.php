@@ -18,25 +18,29 @@ class LoadCountryData extends AbstractFixture
      */
     public function load(ObjectManager $manager)
     {
-        $country1 = (new Country())
-            ->setName('Україна');
-        $this->setReference('country-Ukraine', $country1);
-        $manager->persist($country1);
+        $country = (new Country())
+            ->setName('Україна')
+            ->setSlug('ukraine');
+        $this->setReference('country-Ukraine', $country);
+        $manager->persist($country);
 
-        $country2 = (new Country())
-            ->setName('Білорусь');
-        $this->setReference('country-Belarus', $country2);
-        $manager->persist($country2);
+        $country = (new Country())
+            ->setName('Білорусь')
+            ->setSlug('belarus');
+        $this->setReference('country-Belarus', $country);
+        $manager->persist($country);
 
-        $country3 = (new Country())
-            ->setName('Польща');
-        $this->setReference('country-Poland', $country3);
-        $manager->persist($country3);
+        $country = (new Country())
+            ->setName('Польща')
+            ->setSlug('poland');
+        $this->setReference('country-Poland', $country);
+        $manager->persist($country);
 
-        $country4 = (new Country())
-            ->setName('Угорщина');
-        $this->setReference('country-Hungary', $country4);
-        $manager->persist($country4);
+        $country = (new Country())
+            ->setName('Угорщина')
+            ->setSlug('hungary');
+        $this->setReference('country-Hungary', $country);
+        $manager->persist($country);
 
         $manager->flush();
     }

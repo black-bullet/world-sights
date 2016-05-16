@@ -18,6 +18,7 @@ use JMS\Serializer\Annotation as JMS;
  *
  * @ORM\Table(name="sight_tickets")
  * @ORM\Entity(repositoryClass="AppBundle\Repository\SightTicketRepository")
+ * @UniqueEntity("slug")
  *
  * @JMS\ExclusionPolicy("all")
  *
@@ -89,7 +90,7 @@ class SightTicket
     private $to;
 
     /**
-     * @var SightTicketType $type Type
+     * @var string $type Type
      *
      * @ORM\Column(name="type", type="SightTicketType", nullable=false)
      *
@@ -130,7 +131,7 @@ class SightTicket
     private $slug;
 
     /**
-     * @var boolean $enabled Enabled
+     * @var bool $enabled Enabled
      *
      * @ORM\Column(type="boolean")
      *
@@ -239,7 +240,7 @@ class SightTicket
     /**
      * Get type
      *
-     * @return SightTicketType Type
+     * @return string Type
      */
     public function getType()
     {
@@ -249,7 +250,7 @@ class SightTicket
     /**
      * Set type
      *
-     * @param SightTicketType $type Type
+     * @param string $type Type
      *
      * @return $this
      */
@@ -311,7 +312,7 @@ class SightTicket
     /**
      * Is enabled?
      *
-     * @return boolean Is enabled?
+     * @return bool Is enabled?
      */
     public function isEnabled()
     {
@@ -321,7 +322,7 @@ class SightTicket
     /**
      * Set enabled
      *
-     * @param boolean $enabled Enabled
+     * @param bool $enabled Enabled
      *
      * @return $this
      */

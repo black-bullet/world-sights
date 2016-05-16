@@ -15,15 +15,17 @@ class SightTourControllerTest extends WebTestCase
 
     /** @var ObjectManager */
     private $manager;
-    
+
     public function setUp()
     {
+        $this->getFixtures();
+
         parent::setUp();
 
-        $this->client  = static::makeClient();
-        $this->manager = $this->client->getContainer()->get('doctrine')->getManager();
+        $this->client = static::makeClient();
 
-        $this->getFixtures();
+        $this->manager = $this->client->getContainer()->get('doctrine')->getManager();
+        $this->client->setServerParameter('HTTP_X_AUTH_TOKEN', '1e5008f3677f7ba2a8bd8e47b8c0c6');
     }
 
     private function getFixtures()
@@ -35,6 +37,7 @@ class SightTourControllerTest extends WebTestCase
             'AppBundle\DataFixtures\ORM\LoadSightData',
             'AppBundle\DataFixtures\ORM\LoadSightTourData',
             'AppBundle\DataFixtures\ORM\LoadSightTicketData',
+            'AppBundle\DataFixtures\ORM\LoadUserData',
         ];
 
         $this->loadFixtures($fixtures);
@@ -42,7 +45,7 @@ class SightTourControllerTest extends WebTestCase
 
     public function testGetAllAction()
     {
-        $this->client->request('GET', '/api/v1/sight-tours');
+        $this->client->request('GET', '/api/v1/sight-tours?limit=10&offset=0');
 
         $response = $this->client->getResponse();
         $data     = json_decode($response->getContent(), true);
@@ -51,11 +54,14 @@ class SightTourControllerTest extends WebTestCase
         $this->assertEquals(200, $data['code']);
         $this->assertCount(4, $data['sight_tours']);
         $this->comparisonSightTour($data['sight_tours'][0]);
+        $this->assertEquals(4, $data['_metadata']['total']);
+        $this->assertEquals(10, $data['_metadata']['limit']);
+        $this->assertEquals(0, $data['_metadata']['offset']);
     }
 
     public function testGetAction()
     {
-        $this->client->request('GET', '/api/v1/sight-tours/sightseeing-in-the-city-kamenetz-podolsk');
+        $this->client->request('GET', '/api/v1/sight-tours/ekskursiyna-programa-po-mistu-kam-yanec-podilskomu');
 
         $response = $this->client->getResponse();
         $data     = json_decode($response->getContent(), true);
@@ -70,7 +76,7 @@ class SightTourControllerTest extends WebTestCase
         /** @var Sight $sight */
         $sight = $this->manager->getRepository('AppBundle:Sight')->findSightFirstResult();
 
-        $data = [
+        $dataRequest = [
             'name'         => '3 дні у Празі',
             'company_name' => 'Аккорд',
             'tour_link'    => 'http://www.accord.com.ua/tour-y-pragy',
@@ -81,7 +87,7 @@ class SightTourControllerTest extends WebTestCase
         $this->client->request(
             'POST',
             '/api/v1/sight-tours',
-            $data,
+            $dataRequest,
             [],
             ['Content-Type' => 'application/json'],
             []
@@ -92,10 +98,10 @@ class SightTourControllerTest extends WebTestCase
 
         $this->assertStatusCode(Response::HTTP_CREATED, $this->client);
         $this->assertEquals(201, $data['code']);
-
-        foreach ($data as $key => $element) {
-            $this->assertEquals($element, $data[$key]);
-        }
+        $this->assertEquals($dataRequest['name'], $data['sight_tour']['name']);
+        $this->assertEquals($dataRequest['company_name'], $data['sight_tour']['company_name']);
+        $this->assertEquals($dataRequest['price'], $data['sight_tour']['price']);
+        $this->assertEquals($dataRequest['sight'], $data['sight_tour']['sight']['id']);
     }
 
     public function testUpdateAction()
@@ -103,7 +109,7 @@ class SightTourControllerTest extends WebTestCase
         /** @var Sight $sight */
         $sight = $this->manager->getRepository('AppBundle:Sight')->findSightFirstResult();
 
-        $data = [
+        $dataRequest = [
             'name'         => '4 дні у Празі',
             'company_name' => '5-Аккорд',
             'company_link' => 'http://www.one.com',
@@ -114,8 +120,8 @@ class SightTourControllerTest extends WebTestCase
 
         $this->client->request(
             'PUT',
-            '/api/v1/sight-tours/sightseeing-in-the-city-kamenetz-podolsk',
-            $data,
+            '/api/v1/sight-tours/ekskursiyna-programa-po-mistu-kam-yanec-podilskomu',
+            $dataRequest,
             [],
             ['Content-Type' => 'application/json'],
             []
@@ -126,10 +132,10 @@ class SightTourControllerTest extends WebTestCase
 
         $this->assertStatusCode(Response::HTTP_OK, $this->client);
         $this->assertEquals(200, $data['code']);
-
-        foreach ($data as $key => $element) {
-            $this->assertEquals($element, $data[$key]);
-        }
+        $this->assertEquals($dataRequest['name'], $data['sight_tour']['name']);
+        $this->assertEquals($dataRequest['company_name'], $data['sight_tour']['company_name']);
+        $this->assertEquals($dataRequest['price'], $data['sight_tour']['price']);
+        $this->assertEquals($dataRequest['sight'], $data['sight_tour']['sight']['id']);
     }
 
     private function comparisonSightTour(array $data)
@@ -137,16 +143,31 @@ class SightTourControllerTest extends WebTestCase
         $sight = [
             'name'         => 'Екскурсійна програма по місту Кам’янець-Подільському',
             'company_name' => '7 днів',
-            'tour_link'    => 'http://www.7dniv.ua/ua/tourism-directions',
             'price'        => 500,
-            'slug'         => 'sightseeing-in-the-city-kamenetz-podolsk',
+            'slug'         => 'ekskursiyna-programa-po-mistu-kam-yanec-podilskomu',
+            'sight'        => [
+                'name'       => 'Кам\'янець-подільська фортеця',
+                'phone'      => '(03849)2-55-33',
+                'sight_type' => [
+                    'name' => 'Замок',
+                ],
+                'locality'   => [
+                    'name'    => 'Кам\'янець-Подільський',
+                    'country' => [
+                        'name' => 'Україна',
+                    ],
+                ],
+            ],
         ];
 
         foreach ($sight as $key => $el) {
-            $this->assertEquals($el, $data[$key]);
+            if (is_array($data[$key])) {
+                foreach ($data[$key] as $key1 => $el1) {
+                    $this->assertEquals($el1, $data[$key][$key1]);
+                }
+            } else {
+                $this->assertEquals($el, $data[$key]);
+            }
         }
-
-        $this->assertEquals('Кам\'янець-подільська фортеця', $data['sight']['name']);
-        $this->assertEquals('(03849)2-55-33', $data['sight']['phone']);
     }
 }
